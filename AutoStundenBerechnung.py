@@ -76,7 +76,18 @@ class AutoStundenBerechnung:
 
     def berechne_wochenarbeitszeit(self):
         """_summary_"""
+        index = 2
         print(f"{UNDERLINE}{BOLD}Stunden werden berechnet ...{RESET}")
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        c1 = sheet.cell(row=1, column=1)
+        c1.value = "KW"
+        c2 = sheet.cell(row=1, column=2)
+        c2.value = "Arbeitsstunden"
+        c3 = sheet.cell(row=1, column=3)
+        c3.value = "Ueberstunden"
+        c4 = sheet.cell(row=1, column=4)
+        c4.value = "Gesamte Ueberstunden"
         ueberstunden_liste = []
         for excel_path in self.get_excellist_path():
             zeiten = self.lese_ist_wochenarbeitszeit(excel_path)
@@ -99,7 +110,18 @@ class AutoStundenBerechnung:
                         f"-> {BOLD}{ueberstunden:.2f}h{RESET}{RED} "
                         f"zu WENIG arbeitet.{RESET}"
                     )
+
+                kw_excel = sheet.cell(row=index, column=1)
+                kw_excel.value = zeit["kalenderwoche"]
+                stunden_excel = sheet.cell(row=index, column=2)
+                stunden_excel.value = zeit["wochenarbeitszeit"]
+                uberstundenstunden_excel = sheet.cell(row=index, column=3)
+                uberstundenstunden_excel.value = ueberstunden
+                index += 1
+
         total_ueberstunden = sum(ueberstunden_liste)
+        gesamte_uberstundenstunden_excel = sheet.cell(row=2, column=4)
+        gesamte_uberstundenstunden_excel.value = total_ueberstunden
         print("-" * 50)
         if total_ueberstunden > 0:
             print(
@@ -109,10 +131,18 @@ class AutoStundenBerechnung:
         else:
             print(
                 f"{RED}Du bist insgesamt mit "
-                f"{UNDERLINE}{BOLD}{total_ueberstunden:.2f}h{RESET}{RED} im minus.{RESET}")
+                f"{UNDERLINE}{BOLD}{total_ueberstunden:.2f}h{RESET}{RED} im minus.{RESET}"
+            )
         print("-" * 50)
+
+        sheet.column_dimensions["A"].width = 4
+        sheet.column_dimensions["B"].width = 15
+        sheet.column_dimensions["C"].width = 15
+        sheet.column_dimensions["D"].width = 25
+        sheet.merge_cells(f"D2:D{index-1}")
+        wb.save(self.root_path / "Ueberstunden.xlsx")
 
 
 if __name__ == "__main__":
-    asb = AutoStundenBerechnung()
+    asb = AutoStundenBerechnung(wochenarbeitszeit_soll=31.0)
     asb.berechne_wochenarbeitszeit()
