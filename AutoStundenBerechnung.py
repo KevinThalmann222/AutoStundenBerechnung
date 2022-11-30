@@ -3,6 +3,8 @@ import re
 from pathlib import Path
 
 import openpyxl
+from openpyxl.styles import Font
+from openpyxl.styles.alignment import Alignment
 
 RESET = "\033[0m"
 BOLD = "\033[01m"
@@ -135,12 +137,25 @@ class AutoStundenBerechnung:
             )
         print("-" * 50)
 
-        sheet.column_dimensions["A"].width = 4
-        sheet.column_dimensions["B"].width = 15
-        sheet.column_dimensions["C"].width = 15
-        sheet.column_dimensions["D"].width = 25
+        sheet.column_dimensions["A"].width = 10
+        sheet.column_dimensions["B"].width = 20
+        sheet.column_dimensions["C"].width = 20
+        sheet.column_dimensions["D"].width = 30
         sheet.merge_cells(f"D2:D{index-1}")
-        wb.save(self.root_path / "Ueberstunden.xlsx")
+        sheet["A1"].alignment = Alignment(horizontal="center", vertical="center")
+        sheet["B1"].alignment = Alignment(horizontal="center", vertical="center")
+        sheet["C1"].alignment = Alignment(horizontal="center", vertical="center")
+        sheet["D1"].alignment = Alignment(horizontal="center", vertical="center")
+        sheet["D2"].alignment = Alignment(horizontal="center", vertical="center")
+        sheet["A1"].font = Font(size=14, bold=True)
+        sheet["B1"].font = Font(size=14, bold=True)
+        sheet["C1"].font = Font(size=14, bold=True)
+        sheet["D1"].font = Font(size=14, bold=True)
+        sheet["D2"].font = Font(size=14, bold=True, color="00993366")
+        try:
+            wb.save(self.root_path / "Ueberstunden.xlsx")
+        except Exception:
+            RuntimeError("Bitte schließe die Excel-Liste: 'Ueberstunden.xlsx'")
 
 
 if __name__ == "__main__":
