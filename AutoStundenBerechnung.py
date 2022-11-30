@@ -1,7 +1,8 @@
-import openpyxl
 import os
+import re
 from pathlib import Path
 
+import openpyxl
 
 RESET = "\033[0m"
 BOLD = "\033[01m"
@@ -28,7 +29,9 @@ class AutoStundenBerechnung:
             Iterator[Path]: _description_
         """
         for xlsm_path in self.root_path.glob("*.xlsx"):
-            yield xlsm_path
+            pattern = re.search(".*KW [\d]*-[\d]*.xlsx", str(xlsm_path))
+            if pattern:
+                yield xlsm_path
 
     def lese_ist_wochenarbeitszeit(
         self, excel_path: Path, excel_sheet="Stundenaufstellung"
@@ -73,6 +76,7 @@ class AutoStundenBerechnung:
 
     def berechne_wochenarbeitszeit(self):
         """_summary_"""
+        print(f"{UNDERLINE}{BOLD}Stunden werden berechnet ...{RESET}")
         ueberstunden_liste = []
         for excel_path in self.get_excellist_path():
             zeiten = self.lese_ist_wochenarbeitszeit(excel_path)
@@ -85,20 +89,27 @@ class AutoStundenBerechnung:
                 ueberstunden_liste.append(ueberstunden)
                 if ueberstunden > 0:
                     print(
-                        f"{GREEN}Du hast in KW {zeit['kalenderwoche']} -> +{BOLD}{ueberstunden:.2f}h{RESET}{GREEN} zu VIEL gearbeitet.{RESET}"
+                        f"{GREEN}Du hast in KW {zeit['kalenderwoche']} "
+                        f"-> +{BOLD}{ueberstunden:.2f}h{RESET}{GREEN} "
+                        f"zu VIEL gearbeitet.{RESET}"
                     )
                 else:
                     print(
-                        f"{RED}Du hast in KW {zeit['kalenderwoche']} -> {BOLD}{ueberstunden:.2f}h{RESET}{RED} zu WENIG arbeitet.{RESET}"
+                        f"{RED}Du hast in KW {zeit['kalenderwoche']} "
+                        f"-> {BOLD}{ueberstunden:.2f}h{RESET}{RED} "
+                        f"zu WENIG arbeitet.{RESET}"
                     )
         total_ueberstunden = sum(ueberstunden_liste)
         print("-" * 50)
         if total_ueberstunden > 0:
             print(
-                f"{GREEN}Deine gesamten Überstunde sind: {UNDERLINE}{BOLD}{total_ueberstunden:.2f}h.{RESET}"
+                f"{GREEN}Deine gesamten Überstunde sind: "
+                f"{UNDERLINE}{BOLD}{total_ueberstunden:.2f}h.{RESET}"
             )
         else:
-            print(f"{RED}Du bist insgesamt mit {UNDERLINE}{BOLD}{total_ueberstunden:.2f}h{RESET}{RED} im minus.{RESET}")
+            print(
+                f"{RED}Du bist insgesamt mit "
+                f"{UNDERLINE}{BOLD}{total_ueberstunden:.2f}h{RESET}{RED} im minus.{RESET}")
         print("-" * 50)
 
 
