@@ -16,33 +16,30 @@ ORANGE = "\033[33m"
 
 
 class AutoStundenBerechnung:
-    def __init__(self, wochenarbeitszeit_soll=31.0) -> None:
+    def __init__(self, wochenarbeitszeit_soll: float) -> None:
         self.root_path = Path.cwd()
         self.wochenarbeitszeit_soll = wochenarbeitszeit_soll
         os.system("color")
 
-    def get_excellist_path(self) -> Path:
+    def get_excellist_path(self) -> list:
         """_summary_
 
         Returns:
-            Path: _description_
-
-        Yields:
-            Iterator[Path]: _description_
+            list: _description_
         """
+        xlsm_paths = []
         for xlsm_path in self.root_path.glob("*.xlsx"):
             pattern = re.search(".*KW [\d]*-[\d]*.xlsx", str(xlsm_path))
             if pattern:
-                yield xlsm_path
+                xlsm_paths.append(xlsm_path)
+        return sorted(xlsm_paths)
 
-    def lese_ist_wochenarbeitszeit(
-        self, excel_path: Path, excel_sheet="Stundenaufstellung"
-    ) -> list:
+    def lese_ist_wochenarbeitszeit(self, excel_path: Path, excel_sheet: str) -> list:
         """_summary_
 
         Args:
             excel_path (Path): _description_
-            excel_sheet (str, optional): _description_. Defaults to "Stundenaufstellung".
+            excel_sheet (str, optional): _description_.
 
         Returns:
             list: _description_
@@ -76,10 +73,11 @@ class AutoStundenBerechnung:
                         stundenaufstellung.append(dic)
         return stundenaufstellung
 
-    def berechne_wochenarbeitszeit(self):
+    def berechne_wochenarbeitszeit(self, excel_sheet_name: str) -> None:
         """_summary_"""
         index = 2
         print(f"{UNDERLINE}{BOLD}Stunden werden berechnet ...{RESET}")
+        # Excel-Header
         wb = openpyxl.Workbook()
         sheet = wb.active
         c1 = sheet.cell(row=1, column=1)
@@ -92,7 +90,7 @@ class AutoStundenBerechnung:
         c4.value = "Gesamte Ueberstunden"
         ueberstunden_liste = []
         for excel_path in self.get_excellist_path():
-            zeiten = self.lese_ist_wochenarbeitszeit(excel_path)
+            zeiten = self.lese_ist_wochenarbeitszeit(excel_path, excel_sheet_name)
             for zeit in zeiten:
                 ueberstunden = round(
                     float(zeit["wochenarbeitszeit"])
@@ -112,7 +110,7 @@ class AutoStundenBerechnung:
                         f"-> {BOLD}{ueberstunden:.2f}h{RESET}{RED} "
                         f"zu WENIG arbeitet.{RESET}"
                     )
-
+                # Excel-Export
                 kw_excel = sheet.cell(row=index, column=1)
                 kw_excel.value = zeit["kalenderwoche"]
                 stunden_excel = sheet.cell(row=index, column=2)
@@ -120,10 +118,11 @@ class AutoStundenBerechnung:
                 uberstundenstunden_excel = sheet.cell(row=index, column=3)
                 uberstundenstunden_excel.value = ueberstunden
                 index += 1
-
+        # Excel-Export
         total_ueberstunden = sum(ueberstunden_liste)
         gesamte_uberstundenstunden_excel = sheet.cell(row=2, column=4)
         gesamte_uberstundenstunden_excel.value = total_ueberstunden
+        # User Ausgabe
         print("-" * 50)
         if total_ueberstunden > 0:
             print(
@@ -136,7 +135,7 @@ class AutoStundenBerechnung:
                 f"{UNDERLINE}{BOLD}{total_ueberstunden:.2f}h{RESET}{RED} im minus.{RESET}"
             )
         print("-" * 50)
-
+        # Excel Settings
         sheet.column_dimensions["A"].width = 10
         sheet.column_dimensions["B"].width = 20
         sheet.column_dimensions["C"].width = 20
@@ -152,6 +151,7 @@ class AutoStundenBerechnung:
         sheet["C1"].font = Font(size=14, bold=True)
         sheet["D1"].font = Font(size=14, bold=True)
         sheet["D2"].font = Font(size=14, bold=True, color="00993366")
+        # Excel Export in Datei
         try:
             wb.save(self.root_path / "Ueberstunden.xlsx")
         except Exception:
@@ -160,4 +160,4 @@ class AutoStundenBerechnung:
 
 if __name__ == "__main__":
     asb = AutoStundenBerechnung(wochenarbeitszeit_soll=31.0)
-    asb.berechne_wochenarbeitszeit()
+    asb.berechne_wochenarbeitszeit(excel_sheet_name="Stundenaufstellung")
