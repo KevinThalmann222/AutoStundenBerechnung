@@ -161,3 +161,12 @@ class AutoStundenBerechnung:
 if __name__ == "__main__":
     asb = AutoStundenBerechnung(wochenarbeitszeit_soll=31.0)
     asb.berechne_wochenarbeitszeit(excel_sheet_name="Stundenaufstellung")
+    input("Drücke eine beliebige Taste zum Beenden")
+
+"""
+Install: 
+python -m pip install --upgrade pip
+Run:
+py -m PyInstaller --onefile -c AutoStundenBerechnung.py
+
+"""
