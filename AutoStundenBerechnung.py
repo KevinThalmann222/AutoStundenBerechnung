@@ -50,7 +50,7 @@ class AutoStundenBerechnung:
         try:
             wb = openpyxl.load_workbook(excel_path, data_only=True)
         except Exception:
-            RuntimeError(f"Bitte Excel {excel_path} schließen!")
+            raise RuntimeError(f"Bitte Excel {excel_path.name} schließen!")
         max_col = wb[excel_sheet].max_column + 1
         max_row = wb[excel_sheet].max_row + 1
         for i_row in range(1, max_row):
@@ -155,7 +155,7 @@ class AutoStundenBerechnung:
         try:
             wb.save(self.root_path / "Ueberstunden.xlsx")
         except Exception:
-            RuntimeError("Bitte schließe die Excel-Liste: 'Ueberstunden.xlsx'")
+            raise RuntimeError("Bitte schließe die Excel-Liste: 'Ueberstunden.xlsx'")
 
 
 if __name__ == "__main__":
