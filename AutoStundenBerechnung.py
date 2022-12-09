@@ -29,12 +29,14 @@ class AutoStundenBerechnung:
         """
         xlsm_paths = []
         for xlsm_path in self.root_path.glob("*.xlsx"):
-            pattern = re.search(".*KW [\d]*-[\d]*.xlsx", str(xlsm_path))
+            pattern = re.search(r".*KW [\d]*-[\d]*.xlsx", str(xlsm_path))
             if pattern:
                 xlsm_paths.append(xlsm_path)
         return sorted(xlsm_paths)
 
-    def lese_ist_wochenarbeitszeit(self, excel_path: Path, excel_sheet: str) -> list:
+    def lese_ist_wochenarbeitszeit(self,
+                                   excel_path: Path,
+                                   excel_sheet: str) -> list:
         """_summary_
 
         Args:
@@ -90,7 +92,8 @@ class AutoStundenBerechnung:
         c4.value = "Gesamte Ueberstunden"
         ueberstunden_liste = []
         for excel_path in self.get_excellist_path():
-            zeiten = self.lese_ist_wochenarbeitszeit(excel_path, excel_sheet_name)
+            zeiten = self.lese_ist_wochenarbeitszeit(excel_path,
+                                                     excel_sheet_name)
             for zeit in zeiten:
                 ueberstunden = round(
                     float(zeit["wochenarbeitszeit"])
@@ -132,7 +135,8 @@ class AutoStundenBerechnung:
         else:
             print(
                 f"{RED}Du bist insgesamt mit "
-                f"{UNDERLINE}{BOLD}{total_ueberstunden:.2f}h{RESET}{RED} im minus.{RESET}"
+                f"{UNDERLINE}{BOLD}{total_ueberstunden:.2f}"
+                f"h{RESET}{RED} im minus.{RESET}"
             )
         print("-" * 50)
         # Excel Settings
@@ -141,11 +145,16 @@ class AutoStundenBerechnung:
         sheet.column_dimensions["C"].width = 20
         sheet.column_dimensions["D"].width = 30
         sheet.merge_cells(f"D2:D{index-1}")
-        sheet["A1"].alignment = Alignment(horizontal="center", vertical="center")
-        sheet["B1"].alignment = Alignment(horizontal="center", vertical="center")
-        sheet["C1"].alignment = Alignment(horizontal="center", vertical="center")
-        sheet["D1"].alignment = Alignment(horizontal="center", vertical="center")
-        sheet["D2"].alignment = Alignment(horizontal="center", vertical="center")
+        sheet["A1"].alignment = Alignment(horizontal="center",
+                                          vertical="center")
+        sheet["B1"].alignment = Alignment(horizontal="center",
+                                          vertical="center")
+        sheet["C1"].alignment = Alignment(
+            horizontal="center", vertical="center")
+        sheet["D1"].alignment = Alignment(horizontal="center",
+                                          vertical="center")
+        sheet["D2"].alignment = Alignment(horizontal="center",
+                                          vertical="center")
         sheet["A1"].font = Font(size=14, bold=True)
         sheet["B1"].font = Font(size=14, bold=True)
         sheet["C1"].font = Font(size=14, bold=True)
@@ -153,18 +162,21 @@ class AutoStundenBerechnung:
         sheet["D2"].font = Font(size=14, bold=True, color="00993366")
         # Excel Export in Datei
         try:
+            print("Erstellung einer Excelliste ...")
             wb.save(self.root_path / "Ueberstunden.xlsx")
+            print("Erstellung Fertig")
         except Exception:
-            raise RuntimeError("Bitte schließe die Excel-Liste: 'Ueberstunden.xlsx'")
+            raise RuntimeError("Bitte schließe die Excel-Liste:"
+                               "'Ueberstunden.xlsx'")
 
 
 if __name__ == "__main__":
     asb = AutoStundenBerechnung(wochenarbeitszeit_soll=31.0)
     asb.berechne_wochenarbeitszeit(excel_sheet_name="Stundenaufstellung")
-    input("Drücke eine beliebige Taste zum Beenden")
+    input("Skript Fertig. Zum Beende beliebige Taste Drücken")
 
 """
-Install: 
+Install:
 python -m pip install --upgrade pip
 Run:
 py -m PyInstaller --onefile -c AutoStundenBerechnung.py
