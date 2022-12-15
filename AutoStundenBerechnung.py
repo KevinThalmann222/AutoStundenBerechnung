@@ -21,15 +21,15 @@ class AutoStundenBerechnung:
         self.wochenarbeitszeit_soll = wochenarbeitszeit_soll
         os.system("color")
 
-    def get_excellist_path(self, excel_type: str) -> list:
+    def get_excellist_path(self) -> list:
         """_summary_
 
         Returns:
             list: _description_
         """
         xlsm_paths = []
-        for xlsm_path in self.root_path.glob(f"*.{excel_type}"):
-            pattern = re.search(rf".*KW [\d]*-[\d]*.{excel_type}", str(xlsm_path))
+        for xlsm_path in self.root_path.glob("*.xl*"):
+            pattern = re.search(rf".*KW [\d]*-[\d]*.xl[a-z]+", str(xlsm_path))
             if pattern:
                 xlsm_paths.append(xlsm_path)
         if not xlsm_paths:
@@ -75,9 +75,7 @@ class AutoStundenBerechnung:
                         stundenaufstellung.append(dic)
         return stundenaufstellung
 
-    def berechne_wochenarbeitszeit(
-        self, excel_type: str, excel_sheet_name: str
-    ) -> None:
+    def berechne_wochenarbeitszeit(self, excel_sheet_name: str) -> None:
         """_summary_"""
         index = 2
         print(f"{UNDERLINE}{BOLD}Stunden werden berechnet ...{RESET}")
@@ -93,7 +91,7 @@ class AutoStundenBerechnung:
         c4 = sheet.cell(row=1, column=4)
         c4.value = "Gesamte Ueberstunden"
         ueberstunden_liste = []
-        for excel_path in self.get_excellist_path(excel_type):
+        for excel_path in self.get_excellist_path():
             zeiten = self.lese_ist_wochenarbeitszeit(excel_path, excel_sheet_name)
             for zeit in zeiten:
                 ueberstunden = round(
@@ -167,9 +165,7 @@ class AutoStundenBerechnung:
 
 if __name__ == "__main__":
     asb = AutoStundenBerechnung(wochenarbeitszeit_soll=31.0)
-    asb.berechne_wochenarbeitszeit(
-        excel_type="xlsx", excel_sheet_name="Stundenaufstellung"
-    )
+    asb.berechne_wochenarbeitszeit(excel_sheet_name="Stundenaufstellung")
     input("Skript Fertig. Zum Beende beliebige Taste Drücken")
 
 """
